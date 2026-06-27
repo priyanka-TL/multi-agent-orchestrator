@@ -20,19 +20,24 @@ class OrchestratorAgent:
         self.default_agent = default_agent or GeneralSupportAgent()
         self.llm = get_llm(temperature=0.0)
         
-        # Build the system prompt with the agent details
+        # Build the system prompt dynamically with the agent details
+        # This is a zero-shot classification prompt.
         system_prompt = (
             "You are a router for a customer support system. "
             "Given a user request, classify it into exactly one of the following agent categories based on their descriptions. "
             "Only reply with the exact 'Agent Name', nothing else.\n\n"
         )
         
+        # We loop through all available agents and append their descriptions
         for name, agent in self.agents.items():
             system_prompt += f"- Agent Name: '{name}'\n  Description: {agent.description}\n"
             
         system_prompt += f"\nIf none match, reply with '{self.default_agent.name}'."
         
-        # Build the classification chain
+        # Build the LangChain classification pipeline
+        # 1. 'prompt' templates the messages
+        # 2. 'self.llm' calls the model
+        # 3. 'StrOutputParser' extracts the raw text from the model's response
         prompt = ChatPromptTemplate.from_messages([
             ("system", system_prompt),
             ("human", "{request}")
@@ -45,12 +50,15 @@ class OrchestratorAgent:
         
         logger.debug(f"[{self.name}] Asking LLM to classify intent...")
         try:
+            # Invoke the pipeline to get the classification string
             category = self.router_chain.invoke({"request": request})
             
             if category:
                 logger.debug(f"[{self.name}] LLM Output: '{category}'")
                 
-                # Find the matching agent (case-insensitive for robustness)
+                # Find the matching agent. 
+                # We use 'in' and case-insensitive matching for robustness, 
+                # because LLMs sometimes add punctuation or varying capitalization.
                 for name, agent in self.agents.items():
                     if name.lower() in category.lower():
                         logger.info(f"[{self.name}] Decision: Routing to {name}")
