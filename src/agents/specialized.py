@@ -5,6 +5,10 @@ from src.tools import youtube_search_tool, web_search_tool
 logger = get_logger("specialized_agents")
 
 class HealthTipAgent(BaseAgent):
+    """
+    A simple LCEL agent focused on health and wellness. 
+    It doesn't use tools, it just relies on the LLM's internal knowledge and the system prompt.
+    """
     def __init__(self):
         super().__init__(
             name="Health & Wellness Agent",
@@ -40,6 +44,10 @@ class GeneralSupportAgent(BaseAgent):
         )
 
 class ResearchAgent(BaseAgent):
+    """
+    A tool-augmented agent. It passes its tools (youtube_search_tool, web_search_tool) 
+    to the BaseAgent constructor, which enables the custom multi-iteration tool loop.
+    """
     def __init__(self):
         super().__init__(
             name="Research & Web Agent",
@@ -47,7 +55,9 @@ class ResearchAgent(BaseAgent):
             system_prompt=(
                 "You are a Research Assistant. You have access to tools to search the web and YouTube. "
                 "Always use your tools to find accurate, up-to-date links and references when asked. "
-                "Format your answers with markdown links (e.g. [Title](URL))."
+                "CRITICAL INSTRUCTION: You MUST include the exact links and titles from the tool's output in your final answer! "
+                "Format your answers as a bulleted list with markdown links (e.g. [Title](URL)). "
+                "Do NOT say 'check the previous search results'. You must directly output the links."
             ),
             tools=[youtube_search_tool, web_search_tool]
         )

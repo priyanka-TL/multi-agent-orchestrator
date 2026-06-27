@@ -46,8 +46,10 @@ def chat():
     user_message = data["message"]
     target_agent = data.get("agent_name")
     
-    # Pass the message to our Orchestrator or specific agent
+    # Pass the message to our Orchestrator or a specific agent
     try:
+        # If the user selected a specific agent from the sidebar (not the main NovaAssist orchestrator),
+        # we bypass the router and send the message directly to that agent.
         if target_agent and target_agent != "NovaAssist":
             if target_agent in orchestrator.agents:
                 agent = orchestrator.agents[target_agent]
@@ -56,9 +58,11 @@ def chat():
             else:
                 return jsonify({"error": "Agent not found"}), 404
         else:
+            # If the user selected 'NovaAssist', we let the OrchestratorAgent decide
+            # which sub-agent is best suited to answer the question.
             result = orchestrator.handle_request(user_message, chat_history)
         
-        # Append to history
+        # Append the exchange to the in-memory chat history so the agents have context for future questions
         chat_history.append({"role": "user", "content": user_message})
         chat_history.append({"role": "assistant", "content": result["response"]})
         
