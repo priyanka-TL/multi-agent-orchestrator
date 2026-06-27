@@ -412,3 +412,105 @@ body {
 #send-btn:active {
     transform: scale(0.95);
 }
+
+/* ----------------------------------
+   Responsive Design (Mobile)
+   ---------------------------------- */
+
+.mobile-menu-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    margin-right: 16px;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.mobile-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .mobile-menu-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        height: 100vh;
+        z-index: 20;
+        transition: left 0.3s ease;
+        background: rgba(15, 23, 42, 0.95);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+    }
+    
+    [data-theme="light"] .sidebar {
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+
+    .header-icon {
+        width: 36px;
+        height: 36px;
+        margin-right: 12px;
+    }
+
+    .header-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .header-info h1 {
+        font-size: 1.1rem;
+    }
+
+    .message {
+        max-width: 90%;
+    }
+
+    .chat-messages {
+        padding: 16px;
+    }
+
+    .chat-input-area {
+        padding: 16px;
+    }
+
+    #send-btn {
+        width: 44px;
+        height: 44px;
+    }
+}
