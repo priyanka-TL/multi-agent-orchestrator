@@ -1,5 +1,6 @@
 from src.logger import get_logger
 from .base import BaseAgent
+from src.tools import youtube_search_tool, web_search_tool
 
 logger = get_logger("specialized_agents")
 
@@ -36,4 +37,17 @@ class GeneralSupportAgent(BaseAgent):
                 "You are a friendly General Support Assistant. Answer general questions, "
                 "provide business hours, or politely ask the user to clarify if you don't know the answer."
             )
+        )
+
+class ResearchAgent(BaseAgent):
+    def __init__(self):
+        super().__init__(
+            name="Research & Web Agent",
+            description="Searches the web and YouTube for information, tutorials, links, and references.",
+            system_prompt=(
+                "You are a Research Assistant. You have access to tools to search the web and YouTube. "
+                "Always use your tools to find accurate, up-to-date links and references when asked. "
+                "Format your answers with markdown links (e.g. [Title](URL))."
+            ),
+            tools=[youtube_search_tool, web_search_tool]
         )

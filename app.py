@@ -4,7 +4,7 @@ import logging
 
 # Ensure src modules can be loaded
 from src.config import Config
-from src.agents import HealthTipAgent, TechnicalAgent, GeneralSupportAgent, OrchestratorAgent
+from src.agents import HealthTipAgent, TechnicalAgent, GeneralSupportAgent, OrchestratorAgent, ResearchAgent
 
 app = Flask(__name__)
 
@@ -19,9 +19,10 @@ except ValueError as e:
 health_tip_agent = HealthTipAgent()
 technical_agent = TechnicalAgent()
 general_agent = GeneralSupportAgent()
+research_agent = ResearchAgent()
 
 orchestrator = OrchestratorAgent(
-    agents=[health_tip_agent, technical_agent, general_agent],
+    agents=[health_tip_agent, technical_agent, general_agent, research_agent],
     default_agent=general_agent
 )
 
