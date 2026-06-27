@@ -5,6 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const typingIndicator = document.getElementById('typing-indicator');
     const agentList = document.getElementById('agent-list');
     const themeToggle = document.getElementById('theme-toggle');
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
     const root = document.documentElement;
 
     // Load saved theme
@@ -21,6 +24,20 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('theme', 'light');
         }
     });
+
+    // Mobile Sidebar Toggle
+    function toggleSidebar() {
+        sidebar.classList.toggle('active');
+        sidebarOverlay.classList.toggle('active');
+    }
+
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', toggleSidebar);
+    }
+
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+    }
 
     let currentSelectedAgent = 'NovaAssist'; // Default to orchestrator
 
@@ -44,6 +61,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     li.classList.add('active');
                     currentSelectedAgent = agent.name;
                     addMessage(`Now talking directly to: ${agent.name}`, 'system');
+                    
+                    // Close sidebar on mobile after selecting an agent
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('active');
+                        sidebarOverlay.classList.remove('active');
+                    }
                 });
                 
                 agentList.appendChild(li);
