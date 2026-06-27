@@ -1,5 +1,6 @@
 from src.logger import get_logger
 from .base import BaseAgent
+from src.tools import youtube_search_tool, web_search_tool
 
 logger = get_logger("specialized_agents")
 
@@ -15,16 +16,6 @@ class HealthTipAgent(BaseAgent):
                 "Use bullet points if listing things. Never give medical diagnoses; always recommend seeing a doctor for serious issues."
             )
         )
-        
-    def process(self, request: str, history: list = None) -> str:
-        logger.info(f"[{self.name}] Generating conversational response...")
-        response = self.llm_client.chat_completion(
-            system_prompt=self.system_prompt, 
-            user_prompt=request, 
-            history=history,
-            temperature=0.7
-        )
-        return response or "I'm having trouble coming up with a tip right now. Please try again!"
 
 class TechnicalAgent(BaseAgent):
     def __init__(self):
@@ -36,16 +27,6 @@ class TechnicalAgent(BaseAgent):
                 "troubleshoot software bugs, login issues, and installation errors. Be concise and helpful."
             )
         )
-        
-    def process(self, request: str, history: list = None) -> str:
-        logger.info(f"[{self.name}] Generating conversational response...")
-        response = self.llm_client.chat_completion(
-            system_prompt=self.system_prompt, 
-            user_prompt=request, 
-            history=history,
-            temperature=0.3
-        )
-        return response or "I'm having trouble diagnosing that. Please try again!"
 
 class GeneralSupportAgent(BaseAgent):
     def __init__(self):
@@ -57,13 +38,16 @@ class GeneralSupportAgent(BaseAgent):
                 "provide business hours, or politely ask the user to clarify if you don't know the answer."
             )
         )
-        
-    def process(self, request: str, history: list = None) -> str:
-        logger.info(f"[{self.name}] Generating conversational response...")
-        response = self.llm_client.chat_completion(
-            system_prompt=self.system_prompt, 
-            user_prompt=request, 
-            history=history,
-            temperature=0.5
+
+class ResearchAgent(BaseAgent):
+    def __init__(self):
+        super().__init__(
+            name="Research & Web Agent",
+            description="Searches the web and YouTube for information, tutorials, links, and references.",
+            system_prompt=(
+                "You are a Research Assistant. You have access to tools to search the web and YouTube. "
+                "Always use your tools to find accurate, up-to-date links and references when asked. "
+                "Format your answers with markdown links (e.g. [Title](URL))."
+            ),
+            tools=[youtube_search_tool, web_search_tool]
         )
-        return response or "I'm having trouble answering that. Please try again later."

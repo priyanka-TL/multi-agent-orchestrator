@@ -1,57 +1,65 @@
 from typing import List
 from src.logger import get_logger
-from src.llm import LLMClient
+from src.llm import get_llm
 from .base import BaseAgent
 from .specialized import GeneralSupportAgent
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 
 logger = get_logger("orchestrator")
 
 class OrchestratorAgent:
     """
-    The Main Agent (Router).
-    It receives the initial request, queries an LLM to classify the intent based 
+    The Main Agent (Router) built with LangChain.
+    It receives the initial request, uses a LangChain LCEL chain to classify the intent based 
     on the available sub-agents' descriptions, and delegates the task.
     """
     def __init__(self, agents: List[BaseAgent], default_agent: BaseAgent = None):
         self.name = "Main Router Agent"
         self.agents = {agent.name: agent for agent in agents}
         self.default_agent = default_agent or GeneralSupportAgent()
-        self.llm_client = LLMClient()
+        self.llm = get_llm(temperature=0.0)
         
-    def _build_system_prompt(self) -> str:
-        """
-        Dynamically constructs the system prompt based on the registered agents.
-        """
-        prompt = (
+        # Build the system prompt with the agent details
+        system_prompt = (
             "You are a router for a customer support system. "
             "Given a user request, classify it into exactly one of the following agent categories based on their descriptions. "
             "Only reply with the exact 'Agent Name', nothing else.\n\n"
         )
         
         for name, agent in self.agents.items():
-            prompt += f"- Agent Name: '{name}'\n  Description: {agent.description}\n"
+            system_prompt += f"- Agent Name: '{name}'\n  Description: {agent.description}\n"
             
-        prompt += f"\nIf none match, reply with '{self.default_agent.name}'."
-        return prompt
+        system_prompt += f"\nIf none match, reply with '{self.default_agent.name}'."
+        
+        # Build the classification chain
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", system_prompt),
+            ("human", "{request}")
+        ])
+        
+        self.router_chain = prompt | self.llm | StrOutputParser()
 
     def _decide_sub_agent(self, request: str) -> BaseAgent:
         logger.info(f"[{self.name}] Received new user request: '{request}'")
         
-        system_prompt = self._build_system_prompt()
-        
         logger.debug(f"[{self.name}] Asking LLM to classify intent...")
-        category = self.llm_client.chat_completion(system_prompt, request)
-        
-        if category:
-            logger.debug(f"[{self.name}] LLM Output: '{category}'")
+        try:
+            category = self.router_chain.invoke({"request": request})
             
-            # Find the matching agent (case-insensitive for robustness)
-            for name, agent in self.agents.items():
-                if name.lower() in category.lower():
-                    logger.info(f"[{self.name}] Decision: Routing to {name}")
-                    return agent
-        else:
-            logger.warning(f"[{self.name}] LLM failed to return a valid category.")
+            if category:
+                logger.debug(f"[{self.name}] LLM Output: '{category}'")
+                
+                # Find the matching agent (case-insensitive for robustness)
+                for name, agent in self.agents.items():
+                    if name.lower() in category.lower():
+                        logger.info(f"[{self.name}] Decision: Routing to {name}")
+                        return agent
+            else:
+                logger.warning(f"[{self.name}] LLM failed to return a valid category.")
+                
+        except Exception as e:
+            logger.error(f"[{self.name}] Error during classification: {e}")
             
         logger.info(f"[{self.name}] Decision: Routing to {self.default_agent.name} (Fallback)")
         return self.default_agent

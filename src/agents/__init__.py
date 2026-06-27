@@ -1,5 +1,5 @@
 from .base import BaseAgent
-from .specialized import HealthTipAgent, TechnicalAgent, GeneralSupportAgent
+from .specialized import HealthTipAgent, TechnicalAgent, GeneralSupportAgent, ResearchAgent
 from .orchestrator import OrchestratorAgent
 
 __all__ = [
@@ -7,5 +7,6 @@ __all__ = [
     "HealthTipAgent",
     "TechnicalAgent",
     "GeneralSupportAgent",
-    "OrchestratorAgent"
+    "OrchestratorAgent",
+    "ResearchAgent"
 ]
