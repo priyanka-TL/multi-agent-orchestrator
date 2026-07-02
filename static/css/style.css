@@ -319,6 +319,21 @@ body {
     font-family: monospace;
     font-size: 0.9em;
 }
+.message-content a {
+    color: #60a5fa; /* Lighter blue for dark mode */
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+.message-content a:hover {
+    color: #93c5fd;
+    text-decoration: underline;
+}
+[data-theme="light"] .message-content a {
+    color: #2563eb; /* Darker blue for light mode */
+}
+[data-theme="light"] .message-content a:hover {
+    color: #1d4ed8;
+}
 
 .typing-indicator {
     padding: 16px 24px;
