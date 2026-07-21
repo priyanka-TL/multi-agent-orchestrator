@@ -90,6 +90,17 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/\b\w/g, c => c.toUpperCase());
     }
 
+    function truncateText(text, sentences = 2) {
+        const sentencePattern = /[^.!?]*[.!?]+/g;
+        const matches = text.match(sentencePattern);
+        if (!matches || matches.length <= sentences) return { text, isTruncated: false };
+        return {
+            text: matches.slice(0, sentences).join(' ').trim(),
+            remainder: matches.slice(sentences).join(' ').trim(),
+            isTruncated: true
+        };
+    }
+
     function addMessage(content, type, agentName = null, sources = [], errors = []) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${type}`;
@@ -103,9 +114,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
-        
+
         if (type === 'agent') {
-            contentDiv.innerHTML = marked.parse(content);
+            // For agent responses, check if content is long and truncate if needed
+            const plainText = content.replace(/<[^>]*>/g, '');
+            const truncated = truncateText(plainText, 2);
+
+            if (truncated.isTruncated) {
+                contentDiv.innerHTML = marked.parse(truncated.text);
+
+                const expandBtn = document.createElement('button');
+                expandBtn.className = 'expand-response-btn';
+                expandBtn.textContent = 'Show more';
+
+                const hiddenContent = document.createElement('div');
+                hiddenContent.className = 'expanded-content hidden';
+                hiddenContent.innerHTML = marked.parse(truncated.remainder);
+
+                expandBtn.addEventListener('click', () => {
+                    hiddenContent.classList.toggle('hidden');
+                    expandBtn.textContent = hiddenContent.classList.contains('hidden') ? 'Show more' : 'Show less';
+                });
+
+                contentDiv.appendChild(expandBtn);
+                contentDiv.appendChild(hiddenContent);
+            } else {
+                contentDiv.innerHTML = marked.parse(content);
+            }
         } else {
             contentDiv.textContent = content;
         }
