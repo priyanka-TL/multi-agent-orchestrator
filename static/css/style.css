@@ -11,6 +11,7 @@
     --message-system: rgba(16, 185, 129, 0.2);
     --bg-gradient-1: rgba(59, 130, 246, 0.15);
     --bg-gradient-2: rgba(139, 92, 246, 0.15);
+    --warning-color: #f59e0b;
 }
 
 [data-theme="light"] {
@@ -26,6 +27,7 @@
     --message-system: rgba(16, 185, 129, 0.1);
     --bg-gradient-1: rgba(59, 130, 246, 0.08);
     --bg-gradient-2: rgba(139, 92, 246, 0.08);
+    --warning-color: #f59e0b;
 }
 
 * {
@@ -533,6 +535,52 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* ----------------------------------
+   Tool Errors UI
+   ---------------------------------- */
+.tool-errors-container {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+[data-theme="light"] .tool-errors-container {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.tool-errors-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--warning-color);
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.tool-errors-list {
+    list-style: none;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tool-error-item {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.tool-error-tool {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-right: 4px;
 }
 
 /* ----------------------------------

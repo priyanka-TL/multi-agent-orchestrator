@@ -79,13 +79,14 @@ class OrchestratorAgent:
         """
         # Step 1: Decide which sub-agent is best suited
         selected_agent = self._decide_sub_agent(request)
-        
+
         # Step 2: Delegate the request
         res_dict = selected_agent.process(request, history)
-        
+
         # Step 3: Return the response with context
         return {
             "agent_name": selected_agent.name,
             "response": res_dict["content"],
-            "sources": res_dict.get("sources", [])
+            "sources": res_dict.get("sources", []),
+            "errors": res_dict.get("errors", [])
         }

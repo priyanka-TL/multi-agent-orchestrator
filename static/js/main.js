@@ -83,7 +83,14 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    function addMessage(content, type, agentName = null, sources = []) {
+    function formatToolName(toolName) {
+        return (toolName || 'Tool')
+            .replace(/_tool$/, '')
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function addMessage(content, type, agentName = null, sources = [], errors = []) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${type}`;
 
@@ -138,6 +145,36 @@ document.addEventListener('DOMContentLoaded', () => {
             messageDiv.appendChild(sourcesContainer);
         }
 
+        if (errors && errors.length > 0) {
+            const errorsContainer = document.createElement('div');
+            errorsContainer.className = 'tool-errors-container';
+
+            const errorsHeader = document.createElement('div');
+            errorsHeader.className = 'tool-errors-header';
+            const label = errors.length > 1 ? `${errors.length} issues` : '1 issue';
+            errorsHeader.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> ${label} while gathering results`;
+            errorsContainer.appendChild(errorsHeader);
+
+            const errorsList = document.createElement('ul');
+            errorsList.className = 'tool-errors-list';
+
+            errors.forEach(err => {
+                const li = document.createElement('li');
+                li.className = 'tool-error-item';
+
+                const toolLabel = document.createElement('span');
+                toolLabel.className = 'tool-error-tool';
+                toolLabel.textContent = formatToolName(err.tool);
+                li.appendChild(toolLabel);
+                li.appendChild(document.createTextNode(` ${err.message}`));
+
+                errorsList.appendChild(li);
+            });
+
+            errorsContainer.appendChild(errorsList);
+            messageDiv.appendChild(errorsContainer);
+        }
+
         chatMessages.appendChild(messageDiv);
         scrollToBottom();
     }
@@ -182,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     lastAgent = data.agent_name;
                 }
                 // Add agent response
-                addMessage(data.response, 'agent', data.agent_name, data.sources);
+                addMessage(data.response, 'agent', data.agent_name, data.sources, data.errors);
             } else {
                 addMessage(data.error || 'An error occurred.', 'system');
             }

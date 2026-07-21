@@ -54,7 +54,12 @@ def chat():
             if target_agent in orchestrator.agents:
                 agent = orchestrator.agents[target_agent]
                 res_dict = agent.process(user_message, chat_history)
-                result = {"agent_name": agent.name, "response": res_dict["content"], "sources": res_dict.get("sources", [])}
+                result = {
+                    "agent_name": agent.name,
+                    "response": res_dict["content"],
+                    "sources": res_dict.get("sources", []),
+                    "errors": res_dict.get("errors", [])
+                }
             else:
                 return jsonify({"error": "Agent not found"}), 404
         else:
@@ -65,11 +70,12 @@ def chat():
         # Append the exchange to the in-memory chat history so the agents have context for future questions
         chat_history.append({"role": "user", "content": user_message})
         chat_history.append({"role": "assistant", "content": result["response"]})
-        
+
         return jsonify({
             "agent_name": result["agent_name"],
             "response": result["response"],
             "sources": result.get("sources", []),
+            "errors": result.get("errors", []),
             "status": "success"
         })
     except Exception as e:

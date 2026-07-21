@@ -69,18 +69,23 @@ class BaseAgent(ABC):
                 max_iterations = 3
                 last_tool_result = ""
                 collected_sources = []
-                
+                collected_errors = []
+
                 for _ in range(max_iterations):
                     # Step 1: Ask the LLM what to do
                     response = llm_with_tools.invoke(messages)
-                    
+
                     # Step 2: If the LLM didn't call any tools, it means it generated a final answer!
                     if not response.tool_calls:
-                        return {"content": response.content or "I couldn't generate a clear answer.", "sources": collected_sources}
-                    
+                        return {
+                            "content": response.content or "I couldn't generate a clear answer.",
+                            "sources": collected_sources,
+                            "errors": collected_errors
+                        }
+
                     # Step 3: The LLM asked to use a tool. Add its request to the history.
                     messages.append(response)
-                    
+
                     # Step 4: Execute each tool requested by the LLM
                     for tool_call in response.tool_calls:
                         tool_func = next((t for t in self.tools if t.name == tool_call['name']), None)
@@ -92,19 +97,37 @@ class BaseAgent(ABC):
                                     res_json = json.loads(result)
                                     if "sources" in res_json:
                                         collected_sources.extend(res_json["sources"])
+                                    elif "error" in res_json:
+                                        collected_errors.append({
+                                            "tool": tool_call['name'],
+                                            "message": res_json["error"]
+                                        })
                                 except json.JSONDecodeError:
                                     pass
                             except Exception as e:
                                 result = f"Error: {str(e)}"
+                                collected_errors.append({
+                                    "tool": tool_call['name'],
+                                    "message": str(e)
+                                })
                             last_tool_result = str(result)
-                            
+
                             # Append the tool's result back into the history so the LLM can read it
                             messages.append(ToolMessage(content=last_tool_result, tool_call_id=tool_call['id']))
-                
+
                 # Fallback
                 final_response = llm_with_tools.invoke(messages)
-                content = final_response.content if final_response.content else f"Here is the raw data I found:\n{last_tool_result}"
-                return {"content": content, "sources": collected_sources}
+                if final_response.content:
+                    content = final_response.content
+                elif collected_errors:
+                    content = "I wasn't able to find results for that. Please try rephrasing your request."
+                else:
+                    content = "I wasn't able to complete that request in time. Please try again."
+                return {
+                    "content": content,
+                    "sources": collected_sources,
+                    "errors": collected_errors
+                }
             else:
                 # ---------------------------------------------------------
                 # Standard Execution (No Tools)
@@ -117,13 +140,13 @@ class BaseAgent(ABC):
                             formatted_history.append(("human", msg.get("content", "")))
                         else:
                             formatted_history.append(("ai", msg.get("content", "")))
-                            
+
                 content = self.chain.invoke({
                     "request": request,
                     "history": formatted_history
                 })
-                return {"content": content, "sources": []}
+                return {"content": content, "sources": [], "errors": []}
         except Exception as e:
             import traceback
             traceback.print_exc()
-            return {"content": f"I encountered an error processing your request: {str(e)}", "sources": []}
+            return {"content": f"I encountered an error processing your request: {str(e)}", "sources": [], "errors": []}
