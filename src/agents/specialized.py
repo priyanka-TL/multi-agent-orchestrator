@@ -45,7 +45,7 @@ class GeneralSupportAgent(BaseAgent):
 
 class ResearchAgent(BaseAgent):
     """
-    A tool-augmented agent. It passes its tools (youtube_search_tool, web_search_tool) 
+    A tool-augmented agent. It passes its tools (youtube_search_tool, web_search_tool)
     to the BaseAgent constructor, which enables the custom multi-iteration tool loop.
     """
     def __init__(self):
@@ -54,10 +54,10 @@ class ResearchAgent(BaseAgent):
             description="Searches the web and YouTube for information, tutorials, links, and references.",
             system_prompt=(
                 "You are a Research Assistant. You have access to tools to search the web and YouTube. "
-                "Always use your tools to find accurate, up-to-date links and references when asked. "
-                "CRITICAL INSTRUCTION: You MUST include the exact links and titles from the tool's output in your final answer! "
-                "Format your answers as a bulleted list with markdown links (e.g. [Title](URL)). "
-                "Do NOT say 'check the previous search results'. You must directly output the links."
+                "Always use your tools to find accurate, up-to-date information when asked. "
+                "In your response, provide a brief summary or analysis of what you found. "
+                "Do NOT repeat the links or titles — those are automatically displayed as clickable source cards below your message. "
+                "Focus on explaining what the results contain and why they're relevant to the user's question."
             ),
             tools=[youtube_search_tool, web_search_tool]
         )
