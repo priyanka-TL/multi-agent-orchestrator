@@ -96,9 +96,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
-        
+
         if (type === 'agent') {
             contentDiv.innerHTML = marked.parse(content);
+            // Ensure all links in agent responses open in new tabs
+            contentDiv.querySelectorAll('a').forEach(link => {
+                link.setAttribute('target', '_blank');
+                link.setAttribute('rel', 'noopener noreferrer');
+            });
         } else {
             contentDiv.textContent = content;
         }
